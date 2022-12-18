@@ -1,26 +1,22 @@
 import os
 
-#import openai
+import openai
 from flask import Flask, redirect, render_template, request, url_for
-from transformers import pipeline, set_seed
 
 app = Flask(__name__)
-#openai.api_key = os.getenv("OPENAI_API_KEY")
-#openai.api_key =''
+openai.api_key = os.getenv("OPENAI_API_KEY")
+
 
 @app.route("/", methods=("GET", "POST"))
 def index():
     if request.method == "POST":
         animal = request.form["animal"]
-        generator = pipeline('text-generation', model='gpt2')
-        set_seed(42)
-        # import warnings
-        # warnings.filterwarnings("ignore")
-        gen=generator(animal, max_length=70, num_return_sequences=7)
-        #for i in range(7):
-        #print([i+1], gen[i].get("generated_text"),'\n') 
-        #return redirect(url_for("index", result=response.choices[0].text))
-        return redirect(url_for("index", result=gen[0].get("generated_text")))
+        response = openai.Completion.create(
+            model="text-davinci-002",
+            prompt=generate_prompt(animal),
+            temperature=0.6,
+        )
+        return redirect(url_for("index", result=response.choices[0].text))
 
     result = request.args.get("result")
     return render_template("index.html", result=result)
